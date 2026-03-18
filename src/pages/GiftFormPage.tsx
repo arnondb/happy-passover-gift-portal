@@ -3,29 +3,29 @@ import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Heart, Sprout, CheckCircle2, Sparkles, Sun, ArrowLeft, Send, Edit3 } from 'lucide-react';
+import { Heart, Sprout, CheckCircle2, Sparkles, Sun, ArrowLeft, Send, Edit3, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ApiResponse } from '@shared/types';
 const formSchema = z.object({
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
+  firstName: z.string().min(2, "First name is too short"),
+  lastName: z.string().min(2, "Last name is too short"),
   company: z.string().min(2, "Company name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Valid phone number required"),
-  address: z.string().min(10, "Full shipping address required"),
+  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  address: z.string().min(10, "Please provide a complete shipping address"),
 });
 type FormData = z.infer<typeof formSchema>;
 type Step = 'form' | 'review' | 'final';
 export function GiftFormPage() {
   const [searchParams] = useSearchParams();
-  const repName = searchParams.get('rep') || 'Your Representative';
+  const repName = searchParams.get('rep') || 'Representative';
   const [step, setStep] = useState<Step>('form');
   const [submittedData, setSubmittedData] = useState<FormData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    values: submittedData || {
+    defaultValues: submittedData || {
       firstName: '',
       lastName: '',
       company: '',
@@ -50,20 +50,23 @@ export function GiftFormPage() {
       });
       const result = await response.json() as ApiResponse;
       if (response.ok && result.success) {
-        setStep('final');
-        toast.success('Gift claim confirmed!');
+        // Aesthetic delay for confirmation feeling
+        setTimeout(() => {
+          setStep('final');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          toast.success('Gift claim confirmed!');
+        }, 800);
       } else {
         throw new Error(result.error || 'Failed to submit');
       }
     } catch (error: any) {
       toast.error(error.message || 'Something went wrong. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
   if (step === 'final') {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen flex items-center justify-center bg-[#FFF9EA]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[80vh] flex items-center justify-center">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -71,10 +74,10 @@ export function GiftFormPage() {
           className="card-playful bg-playful-yellow text-center space-y-8 max-w-2xl relative overflow-hidden"
         >
           <div className="absolute top-4 right-4 animate-bounce">
-            <Sparkles className="w-8 h-8 text-playful-pink" />
+            <Sparkles className="w-10 h-10 text-playful-pink" />
           </div>
           <div className="absolute bottom-4 left-4 animate-pulse">
-            <Sun className="w-10 h-10 text-playful-blue" />
+            <Sun className="w-12 h-12 text-playful-blue" />
           </div>
           <div className="w-32 h-32 bg-white border-4 border-black rounded-full flex items-center justify-center mx-auto shadow-playful">
             <CheckCircle2 className="w-20 h-20 text-playful-green" />
@@ -83,12 +86,12 @@ export function GiftFormPage() {
             <h1 className="text-6xl font-black leading-tight">Chag Sameach!</h1>
             <p className="text-2xl font-bold leading-relaxed">
               Your Passover gift is on its way from grateful farmers. <br />
-              <span className="text-playful-pink">Happy Holiday!</span>
+              <span className="text-playful-pink">Have a wonderful holiday!</span>
             </p>
-            <div className="flex justify-center gap-4 pt-4">
-              <Heart className="w-8 h-8 fill-playful-pink text-black" />
-              <Heart className="w-8 h-8 fill-playful-blue text-black" />
-              <Heart className="w-8 h-8 fill-playful-green text-black" />
+            <div className="flex justify-center gap-6 pt-4">
+              <Heart className="w-10 h-10 fill-playful-pink text-black" />
+              <Heart className="w-10 h-10 fill-playful-blue text-black" />
+              <Heart className="w-10 h-10 fill-playful-green text-black" />
             </div>
           </div>
         </motion.div>
@@ -102,9 +105,9 @@ export function GiftFormPage() {
           {step === 'form' ? (
             <motion.div
               key="form-step"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
               className="space-y-12"
             >
               <div className="text-center space-y-4">
@@ -112,59 +115,60 @@ export function GiftFormPage() {
                   Happy Passover
                 </div>
                 <h1 className="text-5xl md:text-7xl font-black italic">A Gift for You!</h1>
-                <p className="text-xl font-bold text-black/70 italic">from {repName}</p>
+                <p className="text-xl font-bold text-black/70 italic">Presented by {repName}</p>
               </div>
-              <div className="card-playful bg-playful-green/20 space-y-6">
+              <div className="card-playful bg-playful-green/10 space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="bg-playful-green p-3 rounded-2xl border-4 border-black shadow-playful-sm shrink-0">
                     <Sprout className="w-8 h-8 text-white" />
                   </div>
                   <div className="space-y-2">
-                    <h2 className="text-2xl font-black">Sourced with Love</h2>
+                    <h2 className="text-2xl font-black">Support Local Farmers</h2>
                     <p className="font-bold text-lg leading-relaxed">
-                      This year’s gift is lovingly sourced from local farmers who cultivate the land and have shown incredible resilience. Each package supports their ongoing commitment to bringing fresh produce to our tables.
+                      This holiday, we are proud to share a gift sourced from our local farmers. 
+                      Your gift represents hope, resilience, and the bounty of the land.
                     </p>
                   </div>
                 </div>
               </div>
               <div className="card-playful bg-white space-y-8">
-                <h3 className="text-3xl font-black">Shipping Details</h3>
+                <h3 className="text-3xl font-black border-b-4 border-black pb-2 inline-block">Claim Details</h3>
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="font-black">First Name</label>
+                    <label className="font-black text-sm uppercase">First Name</label>
                     <input {...register('firstName')} className="input-playful w-full" placeholder="John" />
-                    {errors.firstName && <p className="text-playful-pink font-bold text-sm">{errors.firstName.message}</p>}
+                    {errors.firstName && <p className="text-playful-pink font-bold text-sm mt-1">{errors.firstName.message}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="font-black">Last Name</label>
+                    <label className="font-black text-sm uppercase">Last Name</label>
                     <input {...register('lastName')} className="input-playful w-full" placeholder="Doe" />
-                    {errors.lastName && <p className="text-playful-pink font-bold text-sm">{errors.lastName.message}</p>}
+                    {errors.lastName && <p className="text-playful-pink font-bold text-sm mt-1">{errors.lastName.message}</p>}
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <label className="font-black">Company</label>
-                    <input {...register('company')} className="input-playful w-full" placeholder="Acme Corp" />
-                    {errors.company && <p className="text-playful-pink font-bold text-sm">{errors.company.message}</p>}
+                    <label className="font-black text-sm uppercase">Company</label>
+                    <input {...register('company')} className="input-playful w-full" placeholder="Acme Inc." />
+                    {errors.company && <p className="text-playful-pink font-bold text-sm mt-1">{errors.company.message}</p>}
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <label className="font-black">Email Address</label>
+                    <label className="font-black text-sm uppercase">Email Address</label>
                     <input {...register('email')} type="email" className="input-playful w-full" placeholder="john@example.com" />
-                    {errors.email && <p className="text-playful-pink font-bold text-sm">{errors.email.message}</p>}
+                    {errors.email && <p className="text-playful-pink font-bold text-sm mt-1">{errors.email.message}</p>}
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <label className="font-black">Phone Number</label>
-                    <input {...register('phone')} className="input-playful w-full" placeholder="+1 (555) 000-0000" />
-                    {errors.phone && <p className="text-playful-pink font-bold text-sm">{errors.phone.message}</p>}
+                    <label className="font-black text-sm uppercase">Phone Number</label>
+                    <input {...register('phone')} className="input-playful w-full" placeholder="(555) 123-4567" />
+                    {errors.phone && <p className="text-playful-pink font-bold text-sm mt-1">{errors.phone.message}</p>}
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <label className="font-black">Shipping Address</label>
-                    <textarea {...register('address')} className="input-playful w-full min-h-[120px]" placeholder="123 Pesach St, Floor 4, Suite 101..." />
-                    {errors.address && <p className="text-playful-pink font-bold text-sm">{errors.address.message}</p>}
+                    <label className="font-black text-sm uppercase">Shipping Address</label>
+                    <textarea {...register('address')} className="input-playful w-full min-h-[120px]" placeholder="123 Pesach Way, Suite 4..." />
+                    {errors.address && <p className="text-playful-pink font-bold text-sm mt-1">{errors.address.message}</p>}
                   </div>
                   <button
                     type="submit"
-                    className="md:col-span-2 btn-playful bg-playful-blue text-white py-5 text-2xl flex items-center gap-3 justify-center"
+                    className="md:col-span-2 btn-playful bg-playful-blue text-white py-5 text-2xl flex items-center gap-3 justify-center mt-4"
                   >
-                    Review My Claim <Heart className="w-6 h-6 fill-white" />
+                    Review My Gift <Heart className="w-6 h-6 fill-white" />
                   </button>
                 </form>
               </div>
@@ -172,16 +176,16 @@ export function GiftFormPage() {
           ) : (
             <motion.div
               key="review-step"
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
+              exit={{ opacity: 0, x: -20 }}
               className="space-y-8"
             >
               <div className="text-center space-y-4">
-                <h1 className="text-5xl font-black italic">Review Details</h1>
-                <p className="text-xl font-bold text-black/70">Almost there! Double check your information.</p>
+                <h1 className="text-5xl font-black italic">One Last Look!</h1>
+                <p className="text-xl font-bold text-black/70">Ensure your shipping details are correct.</p>
               </div>
-              <div className="card-playful bg-white space-y-6">
+              <div className="card-playful bg-white space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-1">
                     <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Recipient</span>
@@ -193,14 +197,14 @@ export function GiftFormPage() {
                   </div>
                   <div className="space-y-1">
                     <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Email</span>
-                    <p className="text-2xl font-black text-black">{submittedData?.email}</p>
+                    <p className="text-2xl font-black text-black break-all">{submittedData?.email}</p>
                   </div>
                   <div className="space-y-1">
                     <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Phone</span>
                     <p className="text-2xl font-black text-black font-mono">{submittedData?.phone}</p>
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Sent via</span>
+                  <div className="space-y-1 md:col-span-2">
+                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Sent From</span>
                     <p className="text-2xl font-black text-playful-blue">{repName}</p>
                   </div>
                   <div className="space-y-1 md:col-span-2">
@@ -210,29 +214,34 @@ export function GiftFormPage() {
                 </div>
                 <div className="pt-8 flex flex-col sm:flex-row gap-4">
                   <button
-                    onClick={() => setStep('form')}
+                    onClick={() => { setStep('form'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     className="btn-playful bg-white flex-1 py-4 text-xl flex items-center gap-2 justify-center"
+                    disabled={isLoading}
                   >
-                    <Edit3 className="w-6 h-6" /> Edit Details
+                    <Edit3 className="w-6 h-6" /> Fix Info
                   </button>
                   <button
                     disabled={isLoading}
                     onClick={handleConfirmSubmission}
                     className="btn-playful bg-playful-green text-white flex-[2] py-4 text-xl flex items-center gap-3 justify-center"
                   >
-                    {isLoading ? 'Processing...' : (
+                    {isLoading ? (
                       <>
-                        Approve & Send <Send className="w-6 h-6" />
+                        <Loader2 className="w-6 h-6 animate-spin" /> Sending...
+                      </>
+                    ) : (
+                      <>
+                        Confirm Claim <Send className="w-6 h-6" />
                       </>
                     )}
                   </button>
                 </div>
               </div>
               <button
-                onClick={() => setStep('form')}
+                onClick={() => { setStep('form'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className="inline-flex items-center gap-2 font-black text-black/60 hover:text-black transition-colors mx-auto w-full justify-center"
               >
-                <ArrowLeft className="w-5 h-5" /> Go Back
+                <ArrowLeft className="w-5 h-5" /> Change details
               </button>
             </motion.div>
           )}
