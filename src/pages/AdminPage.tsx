@@ -23,26 +23,33 @@ export function AdminPage() {
   });
   const exportCSV = () => {
     if (!data || data.length === 0) return;
+    // Helper to escape CSV values according to RFC 4180
+    const escape = (val: string | undefined | null) => {
+      const s = String(val ?? "");
+      // Replace double quotes with two double quotes and wrap in quotes
+      return `"${s.replace(/"/g, '""')}"`;
+    };
     const headers = ['Date', 'Rep Name', 'First Name', 'Last Name', 'Company', 'Email', 'Phone', 'Address'];
     const csvContent = [
       headers.join(','),
       ...data.map(s => [
-        format(new Date(s.createdAt), 'yyyy-MM-dd HH:mm'),
-        `"${s.repName}"`,
-        `"${s.firstName}"`,
-        `"${s.lastName}"`,
-        `"${s.company}"`,
-        `"${s.email}"`,
-        `"${s.phone}"`,
-        `"${s.address.replace(/\n/g, ' ')}"`
+        escape(format(new Date(s.createdAt), 'yyyy-MM-dd HH:mm')),
+        escape(s.repName),
+        escape(s.firstName),
+        escape(s.lastName),
+        escape(s.company),
+        escape(s.email),
+        escape(s.phone),
+        escape(s.address.replace(/\r?\n/g, ' ')) // Normalize newlines within cells
       ].join(','))
     ].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `passover-gifts-${format(new Date(), 'yyyyMMdd-HHmm')}.csv`;
+    a.download = `passover-gifts-export-${format(new Date(), 'yyyyMMdd-HHmm')}.csv`;
     a.click();
+    window.URL.revokeObjectURL(url);
   };
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -72,10 +79,10 @@ export function AdminPage() {
             </button>
           </div>
         </div>
-        <div className="card-playful bg-white overflow-hidden p-0">
+        <div className="card-playful bg-white overflow-hidden p-0 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-black text-white">
+              <TableHeader className="bg-black text-white border-b-4 border-black">
                 <TableRow className="hover:bg-black border-none">
                   <TableHead className="text-white font-black text-lg py-6 border-r border-white/20">Date</TableHead>
                   <TableHead className="text-white font-black text-lg py-6 border-r border-white/20">Rep</TableHead>
@@ -87,9 +94,9 @@ export function AdminPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  Array.from({ length: 3 }).map((_, i) => (
+                  Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell colSpan={6} className="h-16 animate-pulse bg-gray-50"></TableCell>
+                      <TableCell colSpan={6} className="h-20 animate-pulse bg-gray-50 border-b-2 border-black/5"></TableCell>
                     </TableRow>
                   ))
                 ) : data?.length === 0 ? (
@@ -103,7 +110,7 @@ export function AdminPage() {
                   </TableRow>
                 ) : (
                   data?.map((item) => (
-                    <TableRow key={item.id} className="border-b-4 border-black/5 hover:bg-playful-yellow/5">
+                    <TableRow key={item.id} className="border-b-2 border-black/5 hover:bg-playful-yellow/10 transition-colors">
                       <TableCell className="font-bold py-6">{format(new Date(item.createdAt), 'MMM d, h:mm a')}</TableCell>
                       <TableCell className="font-black text-playful-blue py-6">{item.repName}</TableCell>
                       <TableCell className="font-bold py-6">{item.firstName} {item.lastName}</TableCell>
