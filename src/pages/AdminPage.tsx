@@ -146,15 +146,15 @@ export function AdminPage() {
             <p className="text-xl font-bold">Failed to load submissions. Please refresh.</p>
           </div>
         )}
-        <div className="card-playful bg-white overflow-hidden p-0 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+        <div className="card-playful bg-white overflow-hidden p-0 border-4 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
           <div className="overflow-x-auto">
             <Table className="border-collapse">
               <TableHeader className="bg-black text-white">
                 <TableRow className="hover:bg-black border-none">
-                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/10 px-6">Sales Rep</TableHead>
-                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/10 px-6">Recipient Info</TableHead>
-                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/10 px-6">Contact Details</TableHead>
-                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/10 px-6">Home Address</TableHead>
+                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/20 px-6">Sales Rep</TableHead>
+                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/20 px-6">Recipient Info</TableHead>
+                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/20 px-6">Contact Details</TableHead>
+                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/20 px-6">Home Address</TableHead>
                   <TableHead className="text-white font-black text-xl py-8 px-6 text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -168,9 +168,9 @@ export function AdminPage() {
                 ) : sortedData.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-64 text-center">
-                      <div className="flex flex-col items-center gap-4 text-muted-foreground">
-                        <FileSpreadsheet className="w-20 h-20 opacity-20" />
-                        <p className="text-3xl font-black">No gifts claimed yet!</p>
+                      <div className="flex flex-col items-center gap-4">
+                        <FileSpreadsheet className="w-24 h-24 text-playful-blue/40" />
+                        <p className="text-3xl font-black text-muted-foreground/60 italic">No gifts claimed yet!</p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -198,52 +198,27 @@ export function AdminPage() {
                         <TableCell className="py-8 px-6 border-r-4 border-black/5">
                           {isEditing ? (
                             <div className="space-y-3">
-                              <input
-                                className="input-playful w-full text-sm p-3"
-                                placeholder="First Name"
-                                value={editValues.firstName || ''}
-                                onChange={(e) => setEditValues({ ...editValues, firstName: e.target.value })}
-                              />
-                              <input
-                                className="input-playful w-full text-sm p-3"
-                                placeholder="Last Name"
-                                value={editValues.lastName || ''}
-                                onChange={(e) => setEditValues({ ...editValues, lastName: e.target.value })}
-                              />
-                              <input
-                                className="input-playful w-full text-sm p-3"
-                                placeholder="Company"
-                                value={editValues.company || ''}
-                                onChange={(e) => setEditValues({ ...editValues, company: e.target.value })}
-                              />
+                              <input className="input-playful w-full text-sm p-3" placeholder="First Name" value={editValues.firstName || ''} onChange={(e) => setEditValues({ ...editValues, firstName: e.target.value })} />
+                              <input className="input-playful w-full text-sm p-3" placeholder="Last Name" value={editValues.lastName || ''} onChange={(e) => setEditValues({ ...editValues, lastName: e.target.value })} />
+                              <input className="input-playful w-full text-sm p-3" placeholder="Company" value={editValues.company || ''} onChange={(e) => setEditValues({ ...editValues, company: e.target.value })} />
                             </div>
                           ) : (
-                            <div className="flex flex-col">
-                              <span className="font-black text-xl leading-tight">{item.firstName} {item.lastName}</span>
-                              <span className="text-sm font-bold text-muted-foreground uppercase tracking-tight mt-1">{item.company}</span>
+                            <div className="flex flex-col gap-1">
+                              <span className="font-black text-2xl leading-none text-black">{item.firstName} {item.lastName}</span>
+                              <span className="text-xs font-black text-muted-foreground uppercase tracking-widest mt-1 bg-gray-100 px-2 py-0.5 rounded-md w-fit">{item.company}</span>
                             </div>
                           )}
                         </TableCell>
                         <TableCell className="py-8 px-6 border-r-4 border-black/5">
                           {isEditing ? (
                             <div className="space-y-3">
-                              <input
-                                className="input-playful w-full text-sm p-3"
-                                placeholder="Email"
-                                value={editValues.email || ''}
-                                onChange={(e) => setEditValues({ ...editValues, email: e.target.value })}
-                              />
-                              <input
-                                className="input-playful w-full text-sm p-3"
-                                placeholder="Phone"
-                                value={editValues.phone || ''}
-                                onChange={(e) => setEditValues({ ...editValues, phone: e.target.value })}
-                              />
+                              <input className="input-playful w-full text-sm p-3" placeholder="Email" value={editValues.email || ''} onChange={(e) => setEditValues({ ...editValues, email: e.target.value })} />
+                              <input className="input-playful w-full text-sm p-3" placeholder="Phone" value={editValues.phone || ''} onChange={(e) => setEditValues({ ...editValues, phone: e.target.value })} />
                             </div>
                           ) : (
-                            <div className="flex flex-col gap-1">
-                              <div className="text-sm font-black bg-playful-blue/10 px-2 py-1 rounded-lg border-2 border-playful-blue/20 w-fit">{item.email}</div>
-                              <div className="text-sm font-mono font-bold text-black/60 px-2">{item.phone}</div>
+                            <div className="flex flex-col gap-2">
+                              <div className="text-sm font-black bg-playful-blue/10 px-3 py-1.5 rounded-xl border-2 border-black shadow-playful-sm w-fit">{item.email}</div>
+                              <div className="text-sm font-mono font-bold text-black/60 px-2 tracking-tighter">{item.phone}</div>
                             </div>
                           )}
                         </TableCell>
@@ -255,7 +230,7 @@ export function AdminPage() {
                               onChange={(e) => setEditValues({ ...editValues, address: e.target.value })}
                             />
                           ) : (
-                            <span className="text-sm font-bold block leading-relaxed italic line-clamp-3">"{item.address}"</span>
+                            <span className="text-sm font-bold block leading-relaxed italic text-black/80 line-clamp-3">"{item.address}"</span>
                           )}
                         </TableCell>
                         <TableCell className="py-8 px-6 text-center">
@@ -265,14 +240,14 @@ export function AdminPage() {
                                 <button
                                   onClick={() => updateMutation.mutate({ id: item.id, updates: editValues })}
                                   disabled={updateMutation.isPending}
-                                  className="btn-playful bg-playful-green p-3 text-white shadow-playful-sm"
+                                  className="btn-playful bg-playful-green p-3 text-white shadow-playful-sm hover:scale-105 active:scale-95"
                                   title="Save Changes"
                                 >
                                   <Check className="w-5 h-5" />
                                 </button>
                                 <button
                                   onClick={() => { setEditingId(null); setEditValues({}); }}
-                                  className="btn-playful bg-white p-3 shadow-playful-sm border-2"
+                                  className="btn-playful bg-white p-3 shadow-playful-sm border-2 hover:scale-105 active:scale-95"
                                   title="Cancel"
                                 >
                                   <X className="w-5 h-5" />
@@ -282,14 +257,14 @@ export function AdminPage() {
                               <>
                                 <button
                                   onClick={() => { setEditingId(item.id); setEditValues(item); }}
-                                  className="btn-playful bg-playful-yellow p-3 shadow-playful-sm"
+                                  className="btn-playful bg-playful-yellow p-3 shadow-playful-sm hover:scale-110 active:scale-90"
                                   title="Edit Entry"
                                 >
                                   <Edit2 className="w-5 h-5" />
                                 </button>
                                 <button
                                   onClick={() => setDeletingItem(item)}
-                                  className="btn-playful bg-playful-pink p-3 text-white shadow-playful-sm"
+                                  className="btn-playful bg-playful-pink p-3 text-white shadow-playful-sm hover:scale-110 active:scale-90"
                                   title="Delete Entry"
                                 >
                                   <Trash2 className="w-5 h-5" />
@@ -308,22 +283,22 @@ export function AdminPage() {
         </div>
       </div>
       <AlertDialog open={!!deletingItem} onOpenChange={(open) => !open && setDeletingItem(null)}>
-        <AlertDialogContent className="border-8 border-black rounded-[3rem] shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] bg-white max-w-lg">
+        <AlertDialogContent className="border-8 border-black rounded-[3.5rem] shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] bg-white max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-4xl font-black italic">Wait a second!</AlertDialogTitle>
             <AlertDialogDescription className="text-xl font-bold text-black/80 mt-4 leading-relaxed">
-              Are you sure you want to remove the gift claim for <span className="text-playful-pink underline decoration-4">{deletingItem?.firstName} {deletingItem?.lastName}</span>? 
+              Are you sure you want to remove the gift claim for <span className="text-playful-pink underline decoration-4">{deletingItem?.firstName} {deletingItem?.lastName}</span>?
               <br /><br />
               This will erase their shipping data forever.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-4 mt-8">
-            <AlertDialogCancel className="btn-playful bg-white px-8 py-3 text-lg">
+            <AlertDialogCancel className="btn-playful bg-white px-8 py-3 text-lg hover:bg-gray-50">
               No, keep it
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deletingItem && deleteMutation.mutate(deletingItem.id)}
-              className="btn-playful bg-playful-pink text-white px-8 py-3 text-lg hover:bg-playful-pink/90"
+              className="btn-playful bg-playful-pink text-white px-8 py-3 text-lg hover:bg-playful-pink/90 active:translate-y-1"
             >
               {deleteMutation.isPending ? 'Erasing...' : 'Yes, Delete It'}
             </AlertDialogAction>

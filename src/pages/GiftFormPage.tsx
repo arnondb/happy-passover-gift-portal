@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Heart, Sprout, CheckCircle2, Sparkles, Sun, ArrowLeft, Send, Edit3, Loader2 } from 'lucide-react';
+import { Heart, Sprout, CheckCircle2, Sparkles, Sun, ArrowLeft, Send, Edit3, Loader2, Home } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ApiResponse } from '@shared/types';
@@ -50,7 +50,6 @@ export function GiftFormPage() {
       });
       const result = await response.json() as ApiResponse;
       if (response.ok && result.success) {
-        // Aesthetic delay for confirmation feeling
         setTimeout(() => {
           setStep('final');
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -88,10 +87,15 @@ export function GiftFormPage() {
               Your Passover gift is on its way from grateful farmers. <br />
               <span className="text-playful-pink">Have a wonderful holiday!</span>
             </p>
-            <div className="flex justify-center gap-6 pt-4">
-              <Heart className="w-10 h-10 fill-playful-pink text-black" />
-              <Heart className="w-10 h-10 fill-playful-blue text-black" />
-              <Heart className="w-10 h-10 fill-playful-green text-black" />
+            <div className="flex flex-col items-center gap-6 pt-4">
+              <div className="flex justify-center gap-6">
+                <Heart className="w-10 h-10 fill-playful-pink text-black" />
+                <Heart className="w-10 h-10 fill-playful-blue text-black" />
+                <Heart className="w-10 h-10 fill-playful-green text-black" />
+              </div>
+              <Link to="/" className="btn-playful bg-white px-8 py-3 text-lg flex items-center gap-2">
+                <Home className="w-5 h-5" /> Back Home
+              </Link>
             </div>
           </div>
         </motion.div>
@@ -117,22 +121,22 @@ export function GiftFormPage() {
                 <h1 className="text-5xl md:text-7xl font-black italic">A Gift for You!</h1>
                 <p className="text-xl font-bold text-black/70 italic">Presented by {repName}</p>
               </div>
-              <div className="card-playful bg-playful-green/10 space-y-6">
+              <div className="card-playful bg-playful-green/10 border-4 border-black shadow-playful-sm space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="bg-playful-green p-3 rounded-2xl border-4 border-black shadow-playful-sm shrink-0">
-                    <Sprout className="w-8 h-8 text-white" />
+                    <Sprout className="w-8 h-8 text-black" />
                   </div>
                   <div className="space-y-2">
                     <h2 className="text-2xl font-black">Support Local Farmers</h2>
-                    <p className="font-bold text-lg leading-relaxed">
-                      This holiday, we are proud to share a gift sourced from our local farmers. 
+                    <p className="font-bold text-lg leading-relaxed text-black/90">
+                      This holiday, we are proud to share a gift sourced from our local farmers.
                       Your gift represents hope, resilience, and the bounty of the land.
                     </p>
                   </div>
                 </div>
               </div>
               <div className="card-playful bg-white space-y-8">
-                <h3 className="text-3xl font-black border-b-4 border-black pb-2 inline-block">Claim Details</h3>
+                <h3 className="text-3xl font-black border-b-4 border-black pb-2 inline-block animate-pulse">Claim Details</h3>
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="font-black text-sm uppercase">First Name</label>
