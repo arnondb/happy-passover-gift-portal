@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,9 +21,16 @@ export function GiftFormPage() {
   const [step, setStep] = useState<Step>('form');
   const [submittedData, setSubmittedData] = useState<FormData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // Using 'values' instead of 'defaultValues' to ensure form stays in sync with submittedData when moving back from review
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: submittedData || undefined
+    values: submittedData || {
+      firstName: '',
+      lastName: '',
+      company: '',
+      phone: '',
+      address: ''
+    }
   });
   const handleFormSubmit = (data: FormData) => {
     setSubmittedData(data);
@@ -54,7 +61,7 @@ export function GiftFormPage() {
   if (step === 'final') {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen flex items-center justify-center bg-[#FFF9EA]">
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
@@ -90,7 +97,7 @@ export function GiftFormPage() {
       <div className="py-12 max-w-3xl mx-auto space-y-12">
         <AnimatePresence mode="wait">
           {step === 'form' ? (
-            <motion.div 
+            <motion.div
               key="form-step"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -155,7 +162,7 @@ export function GiftFormPage() {
               </div>
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               key="review-step"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -209,7 +216,7 @@ export function GiftFormPage() {
                   </button>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setStep('form')}
                 className="inline-flex items-center gap-2 font-black text-black/60 hover:text-black transition-colors mx-auto w-full justify-center"
               >
