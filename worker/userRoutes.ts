@@ -10,7 +10,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     app.post('/api/submissions', async (c) => {
         const body = await c.req.json() as Omit<GiftSubmission, 'id' | 'createdAt'>;
-        // 1. Backend Validation Layer
         const requiredFields: (keyof Omit<GiftSubmission, 'id' | 'createdAt'>)[] = [
             'firstName', 'lastName', 'company', 'email', 'phone', 'address', 'repName'
         ];
@@ -23,7 +22,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
             }
         }
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
-        // 2. Duplicate Prevention
         const existingSubmissions = await stub.getSubmissions();
         const normalizeEmail = (email?: string) => email?.toLowerCase().trim() ?? '';
         const isDuplicate = existingSubmissions.some(
@@ -35,13 +33,25 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
                 error: "This email has already claimed a gift."
             } satisfies ApiResponse, 400);
         }
-        // 3. Create Submission
         const submission: GiftSubmission = {
             ...body,
             id: uuidv4(),
             createdAt: new Date().toISOString(),
         };
         const data = await stub.addSubmission(submission);
+        return c.json({ success: true, data } satisfies ApiResponse<GiftSubmission[]>);
+    });
+    app.put('/api/submissions/:id', async (c) => {
+        const id = c.req.param('id');
+        const body = await c.req.json() as Partial<GiftSubmission>;
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const data = await stub.updateSubmission(id, body);
+        return c.json({ success: true, data } satisfies ApiResponse<GiftSubmission[]>);
+    });
+    app.delete('/api/submissions/:id', async (c) => {
+        const id = c.req.param('id');
+        const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
+        const data = await stub.deleteSubmission(id);
         return c.json({ success: true, data } satisfies ApiResponse<GiftSubmission[]>);
     });
     app.get('/api/test', (c) => c.json({ success: true, data: { name: 'Passover Portal API' }}));

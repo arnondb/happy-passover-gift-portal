@@ -30,6 +30,20 @@ export class GlobalDurableObject extends DurableObject {
       await this.ctx.storage.put("submissions", updated);
       return updated;
     }
+    async updateSubmission(id: string, updates: Partial<GiftSubmission>): Promise<GiftSubmission[]> {
+      const items = await this.getSubmissions();
+      const updated = items.map(item => 
+        item.id === id ? { ...item, ...updates, id } : item
+      );
+      await this.ctx.storage.put("submissions", updated);
+      return updated;
+    }
+    async deleteSubmission(id: string): Promise<GiftSubmission[]> {
+      const items = await this.getSubmissions();
+      const updated = items.filter(item => item.id !== id);
+      await this.ctx.storage.put("submissions", updated);
+      return updated;
+    }
     // Existing boilerplate methods
     async addDemoItem(item: DemoItem): Promise<DemoItem[]> {
       const items = await this.getDemoItems();
