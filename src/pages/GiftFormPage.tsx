@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,10 +6,12 @@ import * as z from 'zod';
 import { Heart, Sprout, CheckCircle2, Sparkles, Sun, ArrowLeft, Send, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { ApiResponse } from '@shared/types';
 const formSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
   lastName: z.string().min(2, "Last name is required"),
   company: z.string().min(2, "Company name is required"),
+  email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Valid phone number required"),
   address: z.string().min(10, "Full shipping address required"),
 });
@@ -21,13 +23,13 @@ export function GiftFormPage() {
   const [step, setStep] = useState<Step>('form');
   const [submittedData, setSubmittedData] = useState<FormData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  // Using 'values' instead of 'defaultValues' to ensure form stays in sync with submittedData when moving back from review
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     values: submittedData || {
       firstName: '',
       lastName: '',
       company: '',
+      email: '',
       phone: '',
       address: ''
     }
@@ -46,14 +48,15 @@ export function GiftFormPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...submittedData, repName }),
       });
-      if (response.ok) {
+      const result = await response.json() as ApiResponse;
+      if (response.ok && result.success) {
         setStep('final');
         toast.success('Gift claim confirmed!');
       } else {
-        throw new Error('Failed to submit');
+        throw new Error(result.error || 'Failed to submit');
       }
-    } catch (error) {
-      toast.error('Something went wrong. Please try again.');
+    } catch (error: any) {
+      toast.error(error.message || 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -143,6 +146,11 @@ export function GiftFormPage() {
                     {errors.company && <p className="text-playful-pink font-bold text-sm">{errors.company.message}</p>}
                   </div>
                   <div className="space-y-2 md:col-span-2">
+                    <label className="font-black">Email Address</label>
+                    <input {...register('email')} type="email" className="input-playful w-full" placeholder="john@example.com" />
+                    {errors.email && <p className="text-playful-pink font-bold text-sm">{errors.email.message}</p>}
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
                     <label className="font-black">Phone Number</label>
                     <input {...register('phone')} className="input-playful w-full" placeholder="+1 (555) 000-0000" />
                     {errors.phone && <p className="text-playful-pink font-bold text-sm">{errors.phone.message}</p>}
@@ -182,6 +190,10 @@ export function GiftFormPage() {
                   <div className="space-y-1">
                     <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Company</span>
                     <p className="text-2xl font-black text-black">{submittedData?.company}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Email</span>
+                    <p className="text-2xl font-black text-black">{submittedData?.email}</p>
                   </div>
                   <div className="space-y-1">
                     <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Phone</span>

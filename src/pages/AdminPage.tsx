@@ -23,7 +23,7 @@ export function AdminPage() {
   });
   const exportCSV = () => {
     if (!data || data.length === 0) return;
-    const headers = ['Date', 'Rep Name', 'First Name', 'Last Name', 'Company', 'Phone', 'Address'];
+    const headers = ['Date', 'Rep Name', 'First Name', 'Last Name', 'Company', 'Email', 'Phone', 'Address'];
     const csvContent = [
       headers.join(','),
       ...data.map(s => [
@@ -32,6 +32,7 @@ export function AdminPage() {
         `"${s.firstName}"`,
         `"${s.lastName}"`,
         `"${s.company}"`,
+        `"${s.email}"`,
         `"${s.phone}"`,
         `"${s.address.replace(/\n/g, ' ')}"`
       ].join(','))
@@ -77,11 +78,11 @@ export function AdminPage() {
               <TableHeader className="bg-black text-white">
                 <TableRow className="hover:bg-black border-none">
                   <TableHead className="text-white font-black text-lg py-6 border-r border-white/20">Date</TableHead>
-                  <TableHead className="text-white font-black text-lg py-6 border-r border-white/20">Rep Name</TableHead>
+                  <TableHead className="text-white font-black text-lg py-6 border-r border-white/20">Rep</TableHead>
                   <TableHead className="text-white font-black text-lg py-6 border-r border-white/20">Customer</TableHead>
+                  <TableHead className="text-white font-black text-lg py-6 border-r border-white/20">Email</TableHead>
                   <TableHead className="text-white font-black text-lg py-6 border-r border-white/20">Company</TableHead>
-                  <TableHead className="text-white font-black text-lg py-6 border-r border-white/20">Phone</TableHead>
-                  <TableHead className="text-white font-black text-lg py-6">Address</TableHead>
+                  <TableHead className="text-white font-black text-lg py-6">Phone</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -106,9 +107,9 @@ export function AdminPage() {
                       <TableCell className="font-bold py-6">{format(new Date(item.createdAt), 'MMM d, h:mm a')}</TableCell>
                       <TableCell className="font-black text-playful-blue py-6">{item.repName}</TableCell>
                       <TableCell className="font-bold py-6">{item.firstName} {item.lastName}</TableCell>
+                      <TableCell className="py-6 font-mono text-xs">{item.email}</TableCell>
                       <TableCell className="py-6 font-medium">{item.company}</TableCell>
                       <TableCell className="py-6 font-mono text-sm">{item.phone}</TableCell>
-                      <TableCell className="py-6 max-w-xs truncate font-medium">{item.address}</TableCell>
                     </TableRow>
                   ))
                 )}

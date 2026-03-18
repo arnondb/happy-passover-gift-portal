@@ -9,6 +9,7 @@ export interface GiftSubmission {
   firstName: string;
   lastName: string;
   company: string;
+  email: string;
   phone: string;
   address: string;
   createdAt: string;
