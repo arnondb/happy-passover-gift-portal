@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { Env } from './core-utils';
-import type { ApiResponse, GiftSubmission } from '@shared/types';
+import type { ApiResponse, GiftSubmission, FulfillmentStatus } from '@shared/types';
 import { v4 as uuidv4 } from 'uuid';
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.get('/api/submissions', async (c) => {
@@ -14,17 +14,16 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         }
     });
     app.post('/api/submissions', async (c) => {
-        let body: Omit<GiftSubmission, 'id' | 'createdAt'>;
+        let body: Omit<GiftSubmission, 'id' | 'createdAt' | 'status'>;
         try {
             const rawBody = await c.req.json();
-            // Trim all string inputs for integrity
             body = Object.fromEntries(
                 Object.entries(rawBody).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v])
             ) as any;
         } catch (e) {
             return c.json({ success: false, error: 'Invalid JSON body' } satisfies ApiResponse, 400);
         }
-        const requiredFields: (keyof Omit<GiftSubmission, 'id' | 'createdAt'>)[] = [
+        const requiredFields: (keyof Omit<GiftSubmission, 'id' | 'createdAt' | 'status'>)[] = [
             'firstName', 'lastName', 'company', 'email', 'phone', 'address', 'repName'
         ];
         for (const field of requiredFields) {
@@ -45,12 +44,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         if (isDuplicate) {
             return c.json({
                 success: false,
-                error: "This email has already claimed a Passover gift. Please contact your rep if this is an error."
+                error: "This email has already claimed a Passover gift."
             } satisfies ApiResponse, 400);
         }
         const submission: GiftSubmission = {
             ...body,
             id: uuidv4(),
+            status: 'pending',
             createdAt: new Date().toISOString(),
         };
         try {
@@ -67,11 +67,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         let body: Partial<GiftSubmission>;
         try {
             const rawBody = await c.req.json();
-            // Trim and clean
             body = Object.fromEntries(
                 Object.entries(rawBody).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v])
             );
-            // Safety: Disallow changing the ID via body
+            if (body.status && !['pending', 'shipped'].includes(body.status)) {
+                return c.json({ success: false, error: 'Invalid status value' } satisfies ApiResponse, 400);
+            }
             delete body.id;
             delete (body as any).createdAt;
         } catch (e) {
@@ -98,5 +99,4 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
             return c.json({ success: false, error: 'Delete failed' } satisfies ApiResponse, 500);
         }
     });
-    app.get('/api/test', (c) => c.json({ success: true, data: { name: 'Passover Portal API' }}));
 }

@@ -22,17 +22,22 @@ export class GlobalDurableObject extends DurableObject {
     }
     async getSubmissions(): Promise<GiftSubmission[]> {
       const items = await this.ctx.storage.get("submissions");
-      return (items as GiftSubmission[]) || [];
+      const submissions = (items as GiftSubmission[]) || [];
+      // Data migration/integrity: ensure all items have a status
+      return submissions.map(s => ({
+        ...s,
+        status: s.status || 'pending'
+      }));
     }
     async addSubmission(submission: GiftSubmission): Promise<GiftSubmission[]> {
       const items = await this.getSubmissions();
-      const updated = [submission, ...items];
+      const updated = [{ ...submission, status: 'pending' }, ...items];
       await this.ctx.storage.put("submissions", updated);
       return updated;
     }
     async updateSubmission(id: string, updates: Partial<GiftSubmission>): Promise<GiftSubmission[]> {
       const items = await this.getSubmissions();
-      const updated = items.map(item => 
+      const updated = items.map(item =>
         item.id === id ? { ...item, ...updates, id } : item
       );
       await this.ctx.storage.put("submissions", updated);
@@ -44,7 +49,6 @@ export class GlobalDurableObject extends DurableObject {
       await this.ctx.storage.put("submissions", updated);
       return updated;
     }
-    // Existing boilerplate methods
     async addDemoItem(item: DemoItem): Promise<DemoItem[]> {
       const items = await this.getDemoItems();
       const updatedItems = [...items, item];

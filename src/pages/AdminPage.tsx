@@ -1,8 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Download, RefreshCw, FileSpreadsheet, Trash2, Check, X, Edit2, AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { 
+  ArrowLeft, Download, RefreshCw, FileSpreadsheet, Trash2, 
+  Check, X, Edit2, AlertCircle, Search, Package, Clock 
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Table,
   TableBody,
@@ -22,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from 'sonner';
-import type { ApiResponse, GiftSubmission } from '@shared/types';
+import type { ApiResponse, GiftSubmission, FulfillmentStatus } from '@shared/types';
 import { format, isValid, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 export function AdminPage() {
@@ -30,6 +33,7 @@ export function AdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<GiftSubmission>>({});
   const [deletingItem, setDeletingItem] = useState<GiftSubmission | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['submissions'],
     queryFn: async () => {
@@ -51,17 +55,15 @@ export function AdminPage() {
       return res;
     },
     onSuccess: () => {
-      toast.success('Submission updated!');
+      toast.success('Updated successfully!');
       setEditingId(null);
       queryClient.invalidateQueries({ queryKey: ['submissions'] });
     },
-    onError: (err: any) => toast.error(err.message || 'Failed to update submission'),
+    onError: (err: any) => toast.error(err.message || 'Failed to update'),
   });
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/submissions/${id}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(`/api/submissions/${id}`, { method: 'DELETE' });
       const res = await response.json() as ApiResponse;
       if (!res.success) throw new Error(res.error || 'Delete failed');
       return res;
@@ -71,48 +73,55 @@ export function AdminPage() {
       setDeletingItem(null);
       queryClient.invalidateQueries({ queryKey: ['submissions'] });
     },
-    onError: (err: any) => toast.error(err.message || 'Failed to delete submission'),
+    onError: (err: any) => toast.error(err.message || 'Failed to delete'),
   });
+  const handleToggleStatus = (item: GiftSubmission) => {
+    const newStatus: FulfillmentStatus = item.status === 'shipped' ? 'pending' : 'shipped';
+    updateMutation.mutate({ id: item.id, updates: { status: newStatus } });
+  };
   const handleExportCSV = () => {
     if (!data || data.length === 0) return;
     try {
-      const escape = (val: string | undefined | null) => {
-        const s = String(val ?? "");
-        return `"${s.replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`;
-      };
-      const headers = ['Date', 'Rep Name', 'First Name', 'Last Name', 'Company', 'Email', 'Phone', 'Address'];
+      const escape = (val: string | undefined | null) => `"${String(val ?? "").replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`;
+      const headers = ['Date', 'Status', 'Rep', 'Name', 'Company', 'Email', 'Phone', 'Address'];
       const csvContent = [
         headers.join(','),
-        ...data.map(s => {
-          const date = parseISO(s.createdAt);
-          const dateStr = isValid(date) ? format(date, 'yyyy-MM-dd HH:mm') : s.createdAt;
-          return [
-            escape(dateStr),
-            escape(s.repName),
-            escape(s.firstName),
-            escape(s.lastName),
-            escape(s.company),
-            escape(s.email),
-            escape(s.phone),
-            escape(s.address)
-          ].join(',');
-        })
+        ...data.map(s => [
+          escape(s.createdAt),
+          escape(s.status),
+          escape(s.repName),
+          escape(`${s.firstName} ${s.lastName}`),
+          escape(s.company),
+          escape(s.email),
+          escape(s.phone),
+          escape(s.address)
+        ].join(','))
       ].join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `passover-gifts-${format(new Date(), 'yyyyMMdd-HHmm')}.csv`;
+      a.download = `passover-fulfillment-${format(new Date(), 'yyyyMMdd')}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      toast.error("Failed to export CSV");
+      toast.error("Export failed");
     }
   };
-  const sortedData = useMemo(() => {
+  const filteredAndSortedData = useMemo(() => {
     if (!data) return [];
-    return [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [data]);
+    const filtered = data.filter(s => {
+      const query = searchQuery.toLowerCase();
+      return (
+        s.firstName.toLowerCase().includes(query) ||
+        s.lastName.toLowerCase().includes(query) ||
+        s.email.toLowerCase().includes(query) ||
+        s.company.toLowerCase().includes(query) ||
+        s.repName.toLowerCase().includes(query)
+      );
+    });
+    return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [data, searchQuery]);
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="py-8 md:py-12 space-y-8">
@@ -121,162 +130,89 @@ export function AdminPage() {
             <Link to="/" className="inline-flex items-center gap-2 font-black text-lg hover:underline">
               <ArrowLeft className="w-5 h-5" /> Back Home
             </Link>
-            <h1 className="text-5xl font-black">Admin Dashboard</h1>
+            <h1 className="text-5xl font-black">Fulfillment Center</h1>
           </div>
-          <div className="flex gap-4">
-            <button
-              onClick={() => refetch()}
-              className="btn-playful bg-white px-6 py-3 flex items-center gap-2 shadow-playful-sm"
-            >
-              <RefreshCw className={cn("w-5 h-5", isLoading && "animate-spin")} />
-              Refresh
+          <div className="flex flex-wrap gap-4">
+            <button onClick={() => refetch()} className="btn-playful bg-white px-6 py-3 flex items-center gap-2">
+              <RefreshCw className={cn("w-5 h-5", isLoading && "animate-spin")} /> Refresh
             </button>
-            <button
-              onClick={handleExportCSV}
-              disabled={!data?.length}
-              className="btn-playful bg-playful-green px-8 py-3 flex items-center gap-2 text-white disabled:opacity-50 shadow-playful-sm"
-            >
-              <Download className="w-5 h-5" />
-              Export CSV
+            <button onClick={handleExportCSV} disabled={!data?.length} className="btn-playful bg-playful-green px-8 py-3 flex items-center gap-2 text-white">
+              <Download className="w-5 h-5" /> Export
             </button>
           </div>
         </div>
+        <div className="relative group max-w-xl">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-black/40 group-focus-within:text-playful-blue transition-colors" />
+          <input
+            type="text"
+            placeholder="Search by name, email, or company..."
+            className="input-playful w-full pl-14 text-lg"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
         {isError && (
-          <div className="card-playful bg-playful-pink/10 border-playful-pink text-playful-pink flex items-center gap-4">
+          <div className="card-playful bg-playful-pink/10 text-playful-pink flex items-center gap-4">
             <AlertCircle className="w-8 h-8" />
-            <p className="text-xl font-bold">Failed to load submissions. Please refresh.</p>
+            <p className="text-xl font-bold">Error loading submissions.</p>
           </div>
         )}
         <div className="card-playful bg-white overflow-hidden p-0 border-4 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
           <div className="overflow-x-auto">
-            <Table className="border-collapse">
-              <TableHeader className="bg-black text-white">
+            <Table>
+              <TableHeader className="bg-black">
                 <TableRow className="hover:bg-black border-none">
-                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/20 px-6">Sales Rep</TableHead>
-                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/20 px-6">Recipient Info</TableHead>
-                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/20 px-6">Contact Details</TableHead>
-                  <TableHead className="text-white font-black text-xl py-8 border-r-4 border-white/20 px-6">Home Address</TableHead>
-                  <TableHead className="text-white font-black text-xl py-8 px-6 text-center">Actions</TableHead>
+                  <TableHead className="text-white font-black text-lg py-6 px-6">Status</TableHead>
+                  <TableHead className="text-white font-black text-lg py-6 px-6">Recipient</TableHead>
+                  <TableHead className="text-white font-black text-lg py-6 px-6">Rep</TableHead>
+                  <TableHead className="text-white font-black text-lg py-6 px-6">Address</TableHead>
+                  <TableHead className="text-white font-black text-lg py-6 px-6 text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i} className="border-b-4 border-black">
-                      <TableCell colSpan={5} className="h-24 animate-pulse bg-gray-50"></TableCell>
-                    </TableRow>
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <TableRow key={i} className="border-b-4 border-black h-24 animate-pulse bg-gray-50"><TableCell colSpan={5} /></TableRow>
                   ))
-                ) : sortedData.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-64 text-center">
-                      <motion.div 
-                        initial={{ y: 0 }}
-                        animate={{ y: [0, -10, 0] }}
-                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                        className="flex flex-col items-center gap-4"
-                      >
-                        <FileSpreadsheet className="w-24 h-24 text-playful-blue/40" />
-                        <p className="text-3xl font-black text-muted-foreground/60 italic">No gifts claimed yet!</p>
-                      </motion.div>
-                    </TableCell>
-                  </TableRow>
+                ) : filteredAndSortedData.length === 0 ? (
+                  <TableRow><TableCell colSpan={5} className="h-64 text-center font-black text-2xl text-black/30">No matching claims found.</TableCell></TableRow>
                 ) : (
-                  sortedData.map((item) => {
+                  filteredAndSortedData.map((item) => {
                     const isEditing = editingId === item.id;
                     return (
-                      <TableRow key={item.id} className={cn(
-                        "border-b-4 border-black transition-colors",
-                        isEditing ? "bg-playful-yellow/10" : "hover:bg-playful-yellow/5"
-                      )}>
-                        <TableCell className="py-8 px-6 border-r-4 border-black/5">
-                          {isEditing ? (
-                            <input
-                              className="input-playful w-full text-sm p-3"
-                              value={editValues.repName || ''}
-                              onChange={(e) => setEditValues({ ...editValues, repName: e.target.value })}
-                            />
-                          ) : (
-                            <div className="inline-block bg-playful-yellow px-4 py-1 rounded-full border-2 border-black font-black text-sm shadow-playful-sm">
-                              {item.repName}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-8 px-6 border-r-4 border-black/5">
-                          {isEditing ? (
-                            <div className="space-y-3">
-                              <input className="input-playful w-full text-sm p-3" placeholder="First Name" value={editValues.firstName || ''} onChange={(e) => setEditValues({ ...editValues, firstName: e.target.value })} />
-                              <input className="input-playful w-full text-sm p-3" placeholder="Last Name" value={editValues.lastName || ''} onChange={(e) => setEditValues({ ...editValues, lastName: e.target.value })} />
-                              <input className="input-playful w-full text-sm p-3" placeholder="Company" value={editValues.company || ''} onChange={(e) => setEditValues({ ...editValues, company: e.target.value })} />
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-1">
-                              <span className="font-black text-2xl leading-none text-black">{item.firstName} {item.lastName}</span>
-                              <span className="text-xs font-black text-muted-foreground uppercase tracking-widest mt-1 bg-gray-100 px-2 py-0.5 rounded-md w-fit">{item.company}</span>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-8 px-6 border-r-4 border-black/5">
-                          {isEditing ? (
-                            <div className="space-y-3">
-                              <input className="input-playful w-full text-sm p-3" placeholder="Email" value={editValues.email || ''} onChange={(e) => setEditValues({ ...editValues, email: e.target.value })} />
-                              <input className="input-playful w-full text-sm p-3" placeholder="Phone" value={editValues.phone || ''} onChange={(e) => setEditValues({ ...editValues, phone: e.target.value })} />
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-2">
-                              <div className="text-sm font-black bg-playful-blue/10 px-3 py-1.5 rounded-xl border-2 border-black shadow-playful-sm w-fit">{item.email}</div>
-                              <div className="text-sm font-mono font-bold text-black/60 px-2 tracking-tighter">{item.phone}</div>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-8 px-6 border-r-4 border-black/5 max-w-[300px]">
-                          {isEditing ? (
-                            <textarea
-                              className="input-playful w-full min-h-[100px] text-sm p-3"
-                              value={editValues.address || ''}
-                              onChange={(e) => setEditValues({ ...editValues, address: e.target.value })}
-                            />
-                          ) : (
-                            <span className="text-sm font-bold block leading-relaxed italic text-black/80 line-clamp-3">"{item.address}"</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-8 px-6 text-center">
-                          <div className="flex items-center justify-center gap-4">
-                            {isEditing ? (
-                              <>
-                                <button
-                                  onClick={() => updateMutation.mutate({ id: item.id, updates: editValues })}
-                                  disabled={updateMutation.isPending}
-                                  className="btn-playful bg-playful-green p-3 text-white shadow-playful-sm hover:scale-105 active:scale-95"
-                                  title="Save Changes"
-                                >
-                                  <Check className="w-5 h-5" />
-                                </button>
-                                <button
-                                  onClick={() => { setEditingId(null); setEditValues({}); }}
-                                  className="btn-playful bg-white p-3 shadow-playful-sm border-2 hover:scale-105 active:scale-95"
-                                  title="Cancel"
-                                >
-                                  <X className="w-5 h-5" />
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <button
-                                  onClick={() => { setEditingId(item.id); setEditValues(item); }}
-                                  className="btn-playful bg-playful-yellow p-3 shadow-playful-sm hover:scale-110 active:scale-90"
-                                  title="Edit Entry"
-                                >
-                                  <Edit2 className="w-5 h-5" />
-                                </button>
-                                <button
-                                  onClick={() => setDeletingItem(item)}
-                                  className="btn-playful bg-playful-pink p-3 text-white shadow-playful-sm hover:scale-110 active:scale-90"
-                                  title="Delete Entry"
-                                >
-                                  <Trash2 className="w-5 h-5" />
-                                </button>
-                              </>
+                      <TableRow key={item.id} className="border-b-4 border-black hover:bg-gray-50 transition-colors">
+                        <TableCell className="py-6 px-6">
+                          <button
+                            onClick={() => handleToggleStatus(item)}
+                            className={cn(
+                              "btn-playful px-4 py-2 text-xs uppercase tracking-tighter flex items-center gap-2",
+                              item.status === 'shipped' ? "bg-playful-green text-white" : "bg-playful-yellow text-black"
                             )}
+                          >
+                            {item.status === 'shipped' ? <Package className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                            {item.status}
+                          </button>
+                        </TableCell>
+                        <TableCell className="py-6 px-6">
+                          <div className="flex flex-col">
+                            <span className="font-black text-xl">{item.firstName} {item.lastName}</span>
+                            <span className="text-sm font-bold text-black/50">{item.company}</span>
+                            <span className="text-xs font-mono text-black/40 mt-1">{item.email}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-6 px-6">
+                          <span className="inline-block bg-playful-blue/10 border-2 border-black px-3 py-1 rounded-full text-sm font-black italic">
+                            {item.repName}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-6 px-6 max-w-xs">
+                          <p className="text-sm font-bold line-clamp-2 italic text-black/70">"{item.address}"</p>
+                        </TableCell>
+                        <TableCell className="py-6 px-6 text-center">
+                          <div className="flex justify-center gap-3">
+                            <button onClick={() => setDeletingItem(item)} className="btn-playful bg-playful-pink p-2 text-white">
+                              <Trash2 className="w-5 h-5" />
+                            </button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -288,25 +224,18 @@ export function AdminPage() {
           </div>
         </div>
       </div>
-      <AlertDialog open={!!deletingItem} onOpenChange={(open) => !open && setDeletingItem(null)}>
-        <AlertDialogContent className="border-8 border-black rounded-[3.5rem] shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] bg-white max-w-lg">
+      <AlertDialog open={!!deletingItem} onOpenChange={() => setDeletingItem(null)}>
+        <AlertDialogContent className="border-8 border-black rounded-[3rem] shadow-[15px_15px_0_0_#000]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-4xl font-black italic">Wait a second!</AlertDialogTitle>
-            <AlertDialogDescription className="text-xl font-bold text-black/80 mt-4 leading-relaxed">
-              Are you sure you want to remove the gift claim for <span className="text-playful-pink underline decoration-4">{deletingItem?.firstName} {deletingItem?.lastName}</span>?
-              <br /><br />
-              This will erase their shipping data forever.
+            <AlertDialogTitle className="text-3xl font-black">Delete Claim?</AlertDialogTitle>
+            <AlertDialogDescription className="text-lg font-bold">
+              Are you sure you want to remove the gift claim for {deletingItem?.firstName}?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-4 mt-8">
-            <AlertDialogCancel className="btn-playful bg-white px-8 py-3 text-lg hover:bg-gray-50">
-              No, keep it
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deletingItem && deleteMutation.mutate(deletingItem.id)}
-              className="btn-playful bg-playful-pink text-white px-8 py-3 text-lg hover:bg-playful-pink/90 active:translate-y-1"
-            >
-              {deleteMutation.isPending ? 'Erasing...' : 'Yes, Delete It'}
+          <AlertDialogFooter className="mt-6 gap-4">
+            <AlertDialogCancel className="btn-playful bg-white px-6">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deletingItem && deleteMutation.mutate(deletingItem.id)} className="btn-playful bg-playful-pink text-white px-6">
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
