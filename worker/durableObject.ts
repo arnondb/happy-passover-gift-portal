@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import type { DemoItem, GiftSubmission } from '@shared/types';
+import type { DemoItem, GiftSubmission, FulfillmentStatus } from '@shared/types';
 import { MOCK_ITEMS } from '@shared/mock-data';
 export class GlobalDurableObject extends DurableObject {
     async getCounterValue(): Promise<number> {
@@ -23,15 +23,14 @@ export class GlobalDurableObject extends DurableObject {
     async getSubmissions(): Promise<GiftSubmission[]> {
       const items = await this.ctx.storage.get("submissions");
       const submissions = (items as GiftSubmission[]) || [];
-      // Data migration/integrity: ensure all items have a status
       return submissions.map(s => ({
         ...s,
-        status: s.status || 'pending'
+        status: (s.status || 'pending') as FulfillmentStatus
       }));
     }
     async addSubmission(submission: GiftSubmission): Promise<GiftSubmission[]> {
       const items = await this.getSubmissions();
-      const updated = [{ ...submission, status: 'pending' }, ...items];
+      const updated = [{ ...submission, status: 'pending' as FulfillmentStatus }, ...items];
       await this.ctx.storage.put("submissions", updated);
       return updated;
     }
