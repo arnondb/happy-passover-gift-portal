@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Download, RefreshCw, FileSpreadsheet, Trash2, Check, X, Edit2, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import {
   Table,
   TableBody,
@@ -125,7 +126,7 @@ export function AdminPage() {
           <div className="flex gap-4">
             <button
               onClick={() => refetch()}
-              className="btn-playful bg-white px-6 py-3 flex items-center gap-2"
+              className="btn-playful bg-white px-6 py-3 flex items-center gap-2 shadow-playful-sm"
             >
               <RefreshCw className={cn("w-5 h-5", isLoading && "animate-spin")} />
               Refresh
@@ -133,7 +134,7 @@ export function AdminPage() {
             <button
               onClick={handleExportCSV}
               disabled={!data?.length}
-              className="btn-playful bg-playful-green px-8 py-3 flex items-center gap-2 text-white disabled:opacity-50"
+              className="btn-playful bg-playful-green px-8 py-3 flex items-center gap-2 text-white disabled:opacity-50 shadow-playful-sm"
             >
               <Download className="w-5 h-5" />
               Export CSV
@@ -168,10 +169,15 @@ export function AdminPage() {
                 ) : sortedData.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-64 text-center">
-                      <div className="flex flex-col items-center gap-4">
+                      <motion.div 
+                        initial={{ y: 0 }}
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                        className="flex flex-col items-center gap-4"
+                      >
                         <FileSpreadsheet className="w-24 h-24 text-playful-blue/40" />
                         <p className="text-3xl font-black text-muted-foreground/60 italic">No gifts claimed yet!</p>
-                      </div>
+                      </motion.div>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -180,7 +186,7 @@ export function AdminPage() {
                     return (
                       <TableRow key={item.id} className={cn(
                         "border-b-4 border-black transition-colors",
-                        isEditing ? "bg-playful-yellow/10" : "hover:bg-playful-blue/5"
+                        isEditing ? "bg-playful-yellow/10" : "hover:bg-playful-yellow/5"
                       )}>
                         <TableCell className="py-8 px-6 border-r-4 border-black/5">
                           {isEditing ? (
@@ -234,7 +240,7 @@ export function AdminPage() {
                           )}
                         </TableCell>
                         <TableCell className="py-8 px-6 text-center">
-                          <div className="flex items-center justify-center gap-3">
+                          <div className="flex items-center justify-center gap-4">
                             {isEditing ? (
                               <>
                                 <button

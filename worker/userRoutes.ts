@@ -16,7 +16,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     app.post('/api/submissions', async (c) => {
         let body: Omit<GiftSubmission, 'id' | 'createdAt'>;
         try {
-            body = await c.req.json();
+            const rawBody = await c.req.json();
+            // Trim all string inputs for integrity
+            body = Object.fromEntries(
+                Object.entries(rawBody).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v])
+            ) as any;
         } catch (e) {
             return c.json({ success: false, error: 'Invalid JSON body' } satisfies ApiResponse, 400);
         }
@@ -27,7 +31,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
             if (!body[field] || typeof body[field] !== 'string' || body[field].trim() === '') {
                 return c.json({
                     success: false,
-                    error: `Missing or invalid required field: ${field}`
+                    error: `Please provide a valid ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}.`
                 } satisfies ApiResponse, 400);
             }
         }
@@ -41,7 +45,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         if (isDuplicate) {
             return c.json({
                 success: false,
-                error: "This email has already claimed a gift."
+                error: "This email has already claimed a Passover gift. Please contact your rep if this is an error."
             } satisfies ApiResponse, 400);
         }
         const submission: GiftSubmission = {
@@ -62,7 +66,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         if (!id) return c.json({ success: false, error: 'Missing ID parameter' } satisfies ApiResponse, 400);
         let body: Partial<GiftSubmission>;
         try {
-            body = await c.req.json();
+            const rawBody = await c.req.json();
+            // Trim and clean
+            body = Object.fromEntries(
+                Object.entries(rawBody).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v])
+            );
+            // Safety: Disallow changing the ID via body
+            delete body.id;
+            delete (body as any).createdAt;
         } catch (e) {
             return c.json({ success: false, error: 'Invalid JSON body' } satisfies ApiResponse, 400);
         }

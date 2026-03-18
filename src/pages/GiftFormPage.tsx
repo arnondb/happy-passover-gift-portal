@@ -72,29 +72,38 @@ export function GiftFormPage() {
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
           className="card-playful bg-playful-yellow text-center space-y-8 max-w-2xl relative overflow-hidden"
         >
-          <div className="absolute top-4 right-4 animate-bounce">
-            <Sparkles className="w-10 h-10 text-playful-pink" />
+          <div className="absolute top-4 right-4 animate-bounce delay-150">
+            <Sparkles className="w-12 h-12 text-playful-pink" />
           </div>
-          <div className="absolute bottom-4 left-4 animate-pulse">
-            <Sun className="w-12 h-12 text-playful-blue" />
+          <div className="absolute top-12 left-8 animate-pulse delay-300">
+            <Heart className="w-8 h-8 text-playful-blue fill-current" />
           </div>
-          <div className="w-32 h-32 bg-white border-4 border-black rounded-full flex items-center justify-center mx-auto shadow-playful">
+          <div className="absolute bottom-8 right-12 animate-bounce delay-700">
+            <Sun className="w-14 h-14 text-playful-blue" />
+          </div>
+          <div className="w-32 h-32 bg-white border-4 border-black rounded-full flex items-center justify-center mx-auto shadow-playful relative z-10">
             <CheckCircle2 className="w-20 h-20 text-playful-green" />
           </div>
           <div className="space-y-6 relative z-10">
-            <h1 className="text-6xl font-black leading-tight">Chag Sameach!</h1>
-            <p className="text-2xl font-bold leading-relaxed">
+            <h1 className="text-6xl md:text-7xl font-black leading-tight animate-bounce">Chag Sameach!</h1>
+            <p className="text-2xl md:text-3xl font-bold leading-relaxed">
               Your Passover gift is on its way from grateful farmers. <br />
               <span className="text-playful-pink">Have a wonderful holiday!</span>
             </p>
             <div className="flex flex-col items-center gap-6 pt-4">
               <div className="flex justify-center gap-6">
-                <Heart className="w-10 h-10 fill-playful-pink text-black" />
-                <Heart className="w-10 h-10 fill-playful-blue text-black" />
-                <Heart className="w-10 h-10 fill-playful-green text-black" />
+                <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
+                  <Heart className="w-10 h-10 fill-playful-pink text-black" />
+                </motion.div>
+                <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+                  <Heart className="w-10 h-10 fill-playful-blue text-black" />
+                </motion.div>
+                <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 2.5 }}>
+                  <Heart className="w-10 h-10 fill-playful-green text-black" />
+                </motion.div>
               </div>
-              <Link to="/" className="btn-playful bg-white px-8 py-3 text-lg flex items-center gap-2">
-                <Home className="w-5 h-5" /> Back Home
+              <Link to="/" className="btn-playful bg-white px-10 py-4 text-xl flex items-center gap-2 hover:bg-gray-50">
+                <Home className="w-6 h-6" /> Back Home
               </Link>
             </div>
           </div>
@@ -121,7 +130,7 @@ export function GiftFormPage() {
                 <h1 className="text-5xl md:text-7xl font-black italic">A Gift for You!</h1>
                 <p className="text-xl font-bold text-black/70 italic">Presented by {repName}</p>
               </div>
-              <div className="card-playful bg-playful-green/10 border-4 border-black shadow-playful-sm space-y-6">
+              <div className="card-playful bg-playful-yellow/20 border-4 border-black shadow-playful-sm space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="bg-playful-green p-3 rounded-2xl border-4 border-black shadow-playful-sm shrink-0">
                     <Sprout className="w-8 h-8 text-black" />
@@ -136,7 +145,7 @@ export function GiftFormPage() {
                 </div>
               </div>
               <div className="card-playful bg-white space-y-8">
-                <h3 className="text-3xl font-black border-b-4 border-black pb-2 inline-block animate-pulse">Claim Details</h3>
+                <h3 className="text-3xl font-black border-b-4 border-black pb-2 inline-block">Claim Details</h3>
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="font-black text-sm uppercase">First Name</label>
@@ -189,31 +198,33 @@ export function GiftFormPage() {
                 <h1 className="text-5xl font-black italic">One Last Look!</h1>
                 <p className="text-xl font-bold text-black/70">Ensure your shipping details are correct.</p>
               </div>
-              <div className="card-playful bg-white space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Recipient</span>
-                    <p className="text-2xl font-black text-black">{submittedData?.firstName} {submittedData?.lastName}</p>
+              <div className="card-playful bg-white space-y-10">
+                <div className="grid grid-cols-1 gap-10 text-center">
+                  <div className="space-y-2">
+                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest bg-gray-100 px-3 py-1 rounded-full">Recipient</span>
+                    <p className="text-3xl font-black text-black">{submittedData?.firstName} {submittedData?.lastName}</p>
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Company</span>
-                    <p className="text-2xl font-black text-black">{submittedData?.company}</p>
+                  <div className="space-y-2">
+                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest bg-gray-100 px-3 py-1 rounded-full">Company</span>
+                    <p className="text-3xl font-black text-black">{submittedData?.company}</p>
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Email</span>
-                    <p className="text-2xl font-black text-black break-all">{submittedData?.email}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <span className="text-muted-foreground font-black uppercase text-xs tracking-widest bg-gray-100 px-3 py-1 rounded-full">Email</span>
+                      <p className="text-xl font-black text-black break-all">{submittedData?.email}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-muted-foreground font-black uppercase text-xs tracking-widest bg-gray-100 px-3 py-1 rounded-full">Phone</span>
+                      <p className="text-xl font-black text-black font-mono">{submittedData?.phone}</p>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Phone</span>
-                    <p className="text-2xl font-black text-black font-mono">{submittedData?.phone}</p>
+                  <div className="space-y-2">
+                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest bg-gray-100 px-3 py-1 rounded-full">Sent From</span>
+                    <p className="text-3xl font-black text-playful-blue">{repName}</p>
                   </div>
-                  <div className="space-y-1 md:col-span-2">
-                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Sent From</span>
-                    <p className="text-2xl font-black text-playful-blue">{repName}</p>
-                  </div>
-                  <div className="space-y-1 md:col-span-2">
-                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">Shipping To</span>
-                    <p className="text-2xl font-black text-black leading-snug">{submittedData?.address}</p>
+                  <div className="space-y-2">
+                    <span className="text-muted-foreground font-black uppercase text-xs tracking-widest bg-gray-100 px-3 py-1 rounded-full">Shipping To</span>
+                    <p className="text-2xl font-black text-black leading-snug max-w-lg mx-auto">{submittedData?.address}</p>
                   </div>
                 </div>
                 <div className="pt-8 flex flex-col sm:flex-row gap-4">
@@ -227,7 +238,7 @@ export function GiftFormPage() {
                   <button
                     disabled={isLoading}
                     onClick={handleConfirmSubmission}
-                    className="btn-playful bg-playful-green text-white flex-[2] py-4 text-xl flex items-center gap-3 justify-center"
+                    className="btn-playful bg-playful-green text-white flex-[2] py-4 text-xl flex items-center gap-3 justify-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
                   >
                     {isLoading ? (
                       <>
