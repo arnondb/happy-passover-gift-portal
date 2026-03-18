@@ -25,8 +25,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         const stub = c.env.GlobalDurableObject.get(c.env.GlobalDurableObject.idFromName("global"));
         // 2. Duplicate Prevention
         const existingSubmissions = await stub.getSubmissions();
+        const normalizeEmail = (email?: string) => email?.toLowerCase().trim() ?? '';
         const isDuplicate = existingSubmissions.some(
-            (s) => s.email.toLowerCase() === body.email.toLowerCase()
+            (s) => normalizeEmail(s.email) === normalizeEmail(body.email)
         );
         if (isDuplicate) {
             return c.json({
