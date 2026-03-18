@@ -26,7 +26,7 @@ export function HomePage() {
               </div>
               <div className="space-y-2">
                 <h2 className="text-3xl font-black">Rep Portal</h2>
-                <p className="font-bold text-black/70">Generate your personalized gift links.</p>
+                <p className="font-bold text-black/70">Generate your personalized gift links for customers.</p>
               </div>
             </div>
           </Link>
@@ -37,7 +37,7 @@ export function HomePage() {
               </div>
               <div className="space-y-2">
                 <h2 className="text-3xl font-black">Demo Form</h2>
-                <p className="font-bold text-black/70">Preview the customer gift claim experience.</p>
+                <p className="font-bold text-black/70">Preview the multi-step gift claim and review experience.</p>
               </div>
             </div>
           </Link>
@@ -48,7 +48,7 @@ export function HomePage() {
               </div>
               <div className="space-y-2 text-white">
                 <h2 className="text-3xl font-black">Admin</h2>
-                <p className="font-bold text-white/80">Manage and export all gift submissions.</p>
+                <p className="font-bold text-white/80">Securely manage and export all gift submissions.</p>
               </div>
             </div>
           </Link>
