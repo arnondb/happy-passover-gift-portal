@@ -1,6 +1,6 @@
 # Passover Gift Portal
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/arnondb/happy-passover-gift-portal)
 
 A full-stack web application built on Cloudflare Workers, featuring a modern React frontend with Tailwind CSS and shadcn/ui components. This project demonstrates seamless integration of serverless APIs, Durable Objects for persistent state, and a responsive UI for managing Passover gift exchanges or similar collaborative features.
 
@@ -95,7 +95,7 @@ This builds the frontend (`dist/`) and deploys the Worker via Wrangler. Assets a
 2. Deploy: `bun run build && wrangler deploy`
 3. Custom Domain: Update `wrangler.jsonc` and run `wrangler deploy`.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/arnondb/happy-passover-gift-portal)
 
 ## Project Structure
 
