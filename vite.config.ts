@@ -106,23 +106,22 @@ export default ({ mode }: { mode: string }) => {
   const env = loadEnv(mode, process.cwd());
   return defineConfig({
     plugins: [react(), cloudflare(), watchDependenciesPlugin(), reloadTriggerPlugin()],
-   build: {
+    build: {
       minify: true,
-      sourcemap: false, // ביטול כללי
+      sourcemap: false,
       rollupOptions: {
         output: {
-          sourcemap: false,           // ביטול מפורש ברמת ה-Rollup
-          sourcemapExcludeSources: true, // שינוי ל-true כדי שלא ינסה למשוך מקורות
-          inlineDynamicImports: true    // עוזר לקלאודפלייר עם קובץ אחד
-        },
-        },
-}
-
+          sourcemap: false,
+          sourcemapExcludeSources: true,
+          inlineDynamicImports: true
+        }
+      }
+    },
     customLogger: env.VITE_LOGGER_TYPE === 'json' ? customLogger : undefined,
-    // Enable source maps in development too
     css: {
       devSourcemap: true,
     },
+
     server: {
       allowedHosts: true,
       watch: {
