@@ -4,7 +4,7 @@
  */
  {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "passover-gift-portal-bino7mxoqpq2t0dx2ndgi",
+	"name": "happy-passover-gift-portal",
 	"main": "worker/index.ts",
 	"compatibility_date": "2025-04-24",
 	"assets": {
