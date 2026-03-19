@@ -106,7 +106,7 @@ export default ({ mode }: { mode: string }) => {
   const env = loadEnv(mode, process.cwd());
   return defineConfig({
     plugins: [react(), cloudflare(), watchDependenciesPlugin(), reloadTriggerPlugin()],
-    build: {
+       build: {
       minify: true,
       sourcemap: false,
       rollupOptions: {
@@ -121,7 +121,6 @@ export default ({ mode }: { mode: string }) => {
     css: {
       devSourcemap: true,
     },
-
     server: {
       allowedHosts: true,
       watch: {
@@ -131,6 +130,7 @@ export default ({ mode }: { mode: string }) => {
         },
       },
     },
+
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
