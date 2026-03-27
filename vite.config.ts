@@ -106,17 +106,18 @@ export default ({ mode }: { mode: string }) => {
   const env = loadEnv(mode, process.cwd());
   return defineConfig({
     plugins: [react(), cloudflare(), watchDependenciesPlugin(), reloadTriggerPlugin()],
-    build: {
+       build: {
       minify: true,
-      sourcemap: "inline", // Use inline source maps for better error reporting
+      sourcemap: false,
       rollupOptions: {
         output: {
-          sourcemapExcludeSources: false, // Include original source in source maps
-        },
-      },
+          sourcemap: false,
+          sourcemapExcludeSources: true,
+          inlineDynamicImports: true
+        }
+      }
     },
     customLogger: env.VITE_LOGGER_TYPE === 'json' ? customLogger : undefined,
-    // Enable source maps in development too
     css: {
       devSourcemap: true,
     },
@@ -129,6 +130,7 @@ export default ({ mode }: { mode: string }) => {
         },
       },
     },
+
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
